@@ -6,7 +6,7 @@ Comma-seperated String: "turn, distance, turn, distance..."
 
 turn: String containing either L, R, or S
 
-distance: int (In string form) containing distance to drive straight in feet
+distance: int (In string form) containing distance to drive straight in inches
 
 ### Example
 
@@ -28,3 +28,7 @@ With made up distance numbers should look like:
 ```
 
 The maximum number of moves that can be sent and run at once is currently 100.
+
+## Dependencies
+
+In the Arduino IDE you will need to install WiFiNINA from the library manager and Arduino megaAVR boards from the board manager for use with Uno Wifi Rev2 
