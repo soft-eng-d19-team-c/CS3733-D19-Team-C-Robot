@@ -6,7 +6,7 @@ Comma-seperated String: "turn, distance, turn, distance..."
 
 turn: String containing either L, R, or S
 
-distance: double containing distance to drive straight in feet
+distance: int (In string form) containing distance to drive straight in feet
 
 ### Example
 
@@ -24,5 +24,7 @@ Finally, arrive at Hallway 14 Floor L1
 With made up distance numbers should look like:
 
 ```
-"S,20.0,L,50.0,S,15.4,L,150.0,S,20.0,R,30.0,L,10.0,S,17.0,L,4.5"
+"S,2000,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
 ```
+
+The maximum number of moves that can be sent and run at once is currently 100.

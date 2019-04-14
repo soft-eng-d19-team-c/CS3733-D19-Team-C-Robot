@@ -1,7 +1,7 @@
 const int max_moves = 100;
 String thePOST;
 int len;
-double distances[max_moves];
+int distances[max_moves];
 char directions[max_moves];
 int numMoves;
 
@@ -10,11 +10,12 @@ void setup() {
   // put your setup code here, to run once:
   //Get POST
   /*http magic*/
-  String fakePOST = "S,20.0,L,50.0,S,15.4,L,150.0,S,20.0,R,30.0,L,10.0,S,17.0,L,4.5";
+  String fakePOST = "S,2000,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
   thePOST = fakePOST; //For now...
   len = thePOST.length();
   numMoves = count_moves(thePOST);
   //Parse data into array of directon/distance
+  populateMovementData();
 
 
 
@@ -38,29 +39,68 @@ int count_moves(String theData) {
   int s = 0;
   int moves;
 
-   for (i = 0; i < len; i++)
+  for (i = 0; i < len; i++)
+  {
+    if (theData.charAt(i) == ',')
     {
-     if (theData.charAt(i) == ',')
-     {
-       count++;
-     }
+      count++;
     }
+  }
 
   moves = (count - 1) / 2;
   Serial.println("Moves:" + moves);
 
 }
 
-void populateDistances(){
+void populateMovementData() {
 
-  for (i = 0; i <= numMoves; i + 2){
 
-    token = strtok(thePOST,",");
-    distances[i] = token;
-    
+  int distCount = 0;
+  int dirCount = 1;
+  char str_array[len];
+  thePOST.toCharArray(str_array, len);
+  char* token = strtok(str_array, ",");
+  directions[0] = token;
+  char* token2;
+
+
+  while (token != NULL) { //While there is still unparsed direction data in thePOST
+    for (int i = 1; i <= numMoves; i++) {
+
+      token2 = strtok(NULL, ",");
+      Serial.println("token2:");
+      Serial.println(token2);
+
+      if (i % 2 != 0) { //If i is odd, it is a distance
+        distances[distCount] = token2;
+        distCount++;
+      }
+      else {
+        directions[dirCount] = token2;
+        dirCount++;
+      }
+    }
   }
-  
 }
+
+
+
+/*void populateDistances() {
+
+  char str_array[len];
+  thePOST.toCharArray(str_array, len);
+  char* token = strtok(str_array, ",");
+  char* token2;
+
+  while (token != NULL) {
+    for (int i = 0; i <= numMoves; i + 2) {
+      token2 = strtok(NULL, ",");
+      Serial.println("token2:");
+      Serial.println(token2);
+      //distances[i] = token2;
+    }
+  }
+  }*/
 
 
 
