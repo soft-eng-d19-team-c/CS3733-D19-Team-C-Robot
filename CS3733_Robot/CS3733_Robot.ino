@@ -13,7 +13,7 @@ char directions[max_moves];
 int numMoves;
 
 void setup() {
-  
+
   Serial.begin(9600);
   delay(1000); // wait for serial port to connect
 
@@ -61,12 +61,26 @@ void setup() {
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Iterate through the directions array to make each move
 
-  //Iterate through array
-  //Make each move
-  //Wait until finished
-  //Onto the next
+  for (int i = 0; i <= numMoves; i++) {
+    switch (directions[i]) {
+      case 'S':
+        driveStraight(distances[i]);
+        break;
+      case 'L':
+        turnLeft();
+        driveStraight(distances[i]);
+        break;
+      case 'R':
+        turnRight();
+        driveStraight(distances[i]);
+        break;
+    }
+  }
+
+  Serial.println("Arrived at destination");
+  delay(30000); //Wait 30 seconds
 }
 
 //Counts the number of moves contained in the data
@@ -121,18 +135,18 @@ void populateMovementData() {
   }
 }
 
-void driveStraight(int inches){
+void driveStraight(int inches) {
   //servo.writes or whatever
   //for x time? For encoder distance?
 }
 
-void turnLeft(){
+void turnLeft() {
   //servo.writes or whatever
   //for x time? For encoder distance?
   //Should always be 90 deg
 }
 
-void turnRight(){
+void turnRight() {
   //servo.writes or whatever
   //for x time? For encoder distance?
   //Should always be 90 deg
