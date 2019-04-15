@@ -2,10 +2,18 @@
 #include <WiFiNINA.h>
 #include "arduino_secrets.h"
 
+//Settings
+const int max_moves = 100;
+const int dirMotorA = 13; //Motor pin for channel A, HIGH = forward
+const int dirMotorB = 12; //Motor pin for channel B, HIGH = forward
+const int velMotorA = 3; //Motor pin for channel A, 255 = full speed
+const int velMotorB = 11; //Motor pin for channel B, 255 = full speed
+const int brakeA = 9; //Brake pin for channel A, HIGH = engaged
+const int brakeB = 8; //Brake pin for channel B, HIGH = engaged
+
+
 char ssid[] = SECRET_SSID;        // Network SSID (name)
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
-
-const int max_moves = 100;
 String thePOST;
 int len;
 int distances[max_moves];
@@ -53,10 +61,19 @@ void setup() {
   thePOST = fakePOST; //For now...
   len = thePOST.length();
   numMoves = count_moves(thePOST);
-  populateMovementData(); //Parse data into array of directon/distance
-  //Servo.attach etc.
+  populateMovementData(); //Parse data into arrays of directon/distance
+
+  //Motor setup
+  //Setup Channel A
+  pinMode(dirMotorA, OUTPUT); //Initiates Motor Channel A pin
+  pinMode(brakeA, OUTPUT); //Initiates Brake Channel A pin
+
+  //Setup Channel B
+  pinMode(dirMotorB, OUTPUT); //Initiates Motor Channel B pin
+  pinMode(brakeB, OUTPUT);  //Initiates Brake Channel B pin
+
   Serial.println("Setup Complete");
-  
+
 }
 
 
@@ -128,24 +145,61 @@ void populateMovementData() {
       dirCount++;
     }
   }
-
 }
 
 void driveStraight(int inches) {
-  //servo.writes or whatever
-  //for x time? For encoder distance?
+
+  digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
+  digitalWrite(dirMotorB, HIGH);  //Establishes forward direction of Channel B
+  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //This is where a while loop or some sort of control goes
+  analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
+  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+
+  delay(5000); //In the absence of knowing how far
+
+  analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
+  analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+
 }
 
 void turnLeft() {
-  //servo.writes or whatever
-  //for x time? For encoder distance?
   //Should always be 90 deg
+  digitalWrite(dirMotorA, LOW); //Establishes backwards direction of Channel A
+  digitalWrite(dirMotorB, HIGH);  //Establishes forwards direction of Channel B
+  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //This is where a while loop or some sort of control goes
+  analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
+  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+
+  delay(1000); //In the absence of knowing how far
+
+  analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
+  analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
 }
 
 void turnRight() {
-  //servo.writes or whatever
-  //for x time? For encoder distance?
   //Should always be 90 deg
+  digitalWrite(dirMotorA, HIGH); //Establishes forwards direction of Channel A
+  digitalWrite(dirMotorB, LOW);  //Establishes backwards direction of Channel B
+  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //This is where a while loop or some sort of control goes
+  analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
+  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+
+  delay(1000); //In the absence of knowing how far
+
+  analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
+  analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
 }
 
 //Network Info Stuff
