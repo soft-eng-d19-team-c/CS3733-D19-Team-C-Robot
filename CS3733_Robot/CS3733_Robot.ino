@@ -54,9 +54,9 @@ void setup() {
   len = thePOST.length();
   numMoves = count_moves(thePOST);
   populateMovementData(); //Parse data into array of directon/distance
-
-
+  //Servo.attach etc.
   Serial.println("Setup Complete");
+  
 }
 
 
@@ -100,7 +100,7 @@ int count_moves(String theData) {
   }
 
   moves = (count - 1) / 2;
-  Serial.println("Moves:" + moves);
+  return moves;
 
 }
 
@@ -109,30 +109,26 @@ void populateMovementData() {
 
   int distCount = 0;
   int dirCount = 1;
-  char str_array[len];
-  thePOST.toCharArray(str_array, len);
+  char *str_array = thePOST.c_str();
   char* token = strtok(str_array, ",");
-  directions[0] = token;
+  directions[0] = token[0];
   char* token2;
 
 
-  while (token != NULL) { //While there is still unparsed direction data in thePOST
-    for (int i = 1; i <= numMoves; i++) {
+  for (int j = 1; j <= ((numMoves * 2) + 1); j++) {
 
-      token2 = strtok(NULL, ",");
-      Serial.println("token2:");
-      Serial.println(token2);
+    token2 = strtok(NULL, ",");
 
-      if (i % 2 != 0) { //If i is odd, it is a distance
-        distances[distCount] = token2;
-        distCount++;
-      }
-      else {
-        directions[dirCount] = token2;
-        dirCount++;
-      }
+    if (j % 2 != 0) { //If i is odd, it is a distance
+      distances[distCount] = String(token2).toInt(); //Its as char, needs to be an int...
+      distCount++;
+    }
+    else {
+      directions[dirCount] = token2[0];
+      dirCount++;
     }
   }
+
 }
 
 void driveStraight(int inches) {
@@ -212,28 +208,3 @@ void printMacAddress(byte mac[]) {
   }
   Serial.println();
 }
-
-
-/*void populateDistances() {
-
-  char str_array[len];
-  thePOST.toCharArray(str_array, len);
-  char* token = strtok(str_array, ",");
-  char* token2;
-
-  while (token != NULL) {
-    for (int i = 0; i <= numMoves; i + 2) {
-      token2 = strtok(NULL, ",");
-      Serial.println("token2:");
-      Serial.println(token2);
-      //distances[i] = token2;
-    }
-  }
-  }*/
-
-
-
-//Helper functions for:
-//driveStraight()
-//turnLeft()
-//turnRight()
