@@ -148,9 +148,9 @@ void populateMovementData() {
 }
 
 void driveStraight(int inches) {
-  
+
   digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
-  digitalWrite(dirMotorB, HIGH);  //Establishes backward direction of Channel B
+  digitalWrite(dirMotorB, HIGH);  //Establishes forward direction of Channel B
   digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
   digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
@@ -167,15 +167,39 @@ void driveStraight(int inches) {
 }
 
 void turnLeft() {
-  //servo.writes or whatever
-  //for x time? For encoder distance?
   //Should always be 90 deg
+  digitalWrite(dirMotorA, LOW); //Establishes backwards direction of Channel A
+  digitalWrite(dirMotorB, HIGH);  //Establishes forwards direction of Channel B
+  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //This is where a while loop or some sort of control goes
+  analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
+  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+
+  delay(1000); //In the absence of knowing how far
+
+  analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
+  analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
 }
 
 void turnRight() {
-  //servo.writes or whatever
-  //for x time? For encoder distance?
   //Should always be 90 deg
+  digitalWrite(dirMotorA, HIGH); //Establishes forwards direction of Channel A
+  digitalWrite(dirMotorB, LOW);  //Establishes backwards direction of Channel B
+  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //This is where a while loop or some sort of control goes
+  analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
+  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+
+  delay(1000); //In the absence of knowing how far
+
+  analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
+  analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
 }
 
 //Network Info Stuff
