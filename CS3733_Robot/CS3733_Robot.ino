@@ -10,6 +10,7 @@ const int velMotorA = 3; //Motor pin for channel A, 255 = full speed
 const int velMotorB = 11; //Motor pin for channel B, 255 = full speed
 const int brakeA = 9; //Brake pin for channel A, HIGH = engaged
 const int brakeB = 8; //Brake pin for channel B, HIGH = engaged
+const int turnTime = 2200;
 
 
 char ssid[] = SECRET_SSID;        // Network SSID (name)
@@ -47,7 +48,7 @@ void setup() {
     status = WiFi.begin(ssid);
 
     // wait 10 seconds for connection:
-    delay(10000);
+    delay(2000);
   }
 
   // you're connected now, so print out the data:
@@ -57,7 +58,7 @@ void setup() {
 
   // ********* End Network Setup ********* //
 
-  String fakePOST = "S,2000,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
+  String fakePOST = "S,120,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
   thePOST = fakePOST; //For now...
   len = thePOST.length();
   numMoves = count_moves(thePOST);
@@ -149,6 +150,8 @@ void populateMovementData() {
 
 void driveStraight(int inches) {
 
+  Serial.println("Going straight");
+  double driveTime = (inches / 6) * 1000;
   digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
   digitalWrite(dirMotorB, HIGH);  //Establishes forward direction of Channel B
   digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
@@ -157,7 +160,7 @@ void driveStraight(int inches) {
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
 
-  delay(5000); //In the absence of knowing how far
+  delay(driveTime); //In the absence of knowing how far
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
@@ -167,6 +170,7 @@ void driveStraight(int inches) {
 }
 
 void turnLeft() {
+  Serial.println("Turning Left");
   //Should always be 90 deg
   digitalWrite(dirMotorA, LOW); //Establishes backwards direction of Channel A
   digitalWrite(dirMotorB, HIGH);  //Establishes forwards direction of Channel B
@@ -176,7 +180,7 @@ void turnLeft() {
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
 
-  delay(1000); //In the absence of knowing how far
+  delay(turnTime); //About 90
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
@@ -185,6 +189,7 @@ void turnLeft() {
 }
 
 void turnRight() {
+  Serial.println("Turning Right");
   //Should always be 90 deg
   digitalWrite(dirMotorA, HIGH); //Establishes forwards direction of Channel A
   digitalWrite(dirMotorB, LOW);  //Establishes backwards direction of Channel B
@@ -194,7 +199,7 @@ void turnRight() {
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
 
-  delay(1000); //In the absence of knowing how far
+  delay(turnTime); //About 90
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
