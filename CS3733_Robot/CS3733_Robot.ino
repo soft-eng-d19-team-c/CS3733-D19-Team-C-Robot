@@ -11,15 +11,19 @@ const int velMotorB = 11; //Motor pin for channel B, 255 = full speed
 const int brakeA = 9; //Brake pin for channel A, HIGH = engaged
 const int brakeB = 8; //Brake pin for channel B, HIGH = engaged
 const int turnTime = 2200;
+IPAddress ip(192, 168, 43, 192); //Static IP of the arduino
 
 
 char ssid[] = SECRET_SSID;        // Network SSID (name)
+char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 String thePOST;
 int len;
 int distances[max_moves];
 char directions[max_moves];
 int numMoves;
+
+WiFiServer server(80);
 
 void setup() {
 
@@ -41,28 +45,29 @@ void setup() {
     Serial.println("Please upgrade the firmware");
   }
 
+  WiFi.config(ip); //Force WiFi.begin to use the static IP
+
   // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to open SSID: ");
     Serial.println(ssid);
-    status = WiFi.begin(ssid);
+    status = WiFi.begin(ssid, pass);
 
-    // wait 10 seconds for connection:
-    delay(2000);
+    // wait 5 seconds for connection:
+    delay(5000);
   }
 
   // you're connected now, so print out the data:
   Serial.print("You're connected to the network");
+  server.begin();
   printCurrentNet();
   printWifiData();
 
   // ********* End Network Setup ********* //
 
-  String fakePOST = "S,120,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
-  thePOST = fakePOST; //For now...
-  len = thePOST.length();
-  numMoves = count_moves(thePOST);
-  populateMovementData(); //Parse data into arrays of directon/distance
+  //String fakePOST = "S,120,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
+  String fakerPOST = "S,120,L,0,L,120,R,0,R,0,R,0,L,0,L,0,L,0";
+  thePOST = fakerPOST; //For now...
 
   //Motor setup
   //Setup Channel A
@@ -79,8 +84,18 @@ void setup() {
 
 
 void loop() {
-  // Iterate through the directions array to make each move
 
+  thePOST = ""; //Reset to empty string. Comment this out to use a fake test string
+
+  getInfoFromApp();
+  Serial.println("The instructions recieved are:");
+  Serial.println(thePOST);
+
+  len = thePOST.length();
+  numMoves = count_moves(thePOST);
+  populateMovementData(); //Parse data into arrays of directon/distance
+
+  //Parse directions and distances
   for (int i = 0; i <= numMoves; i++) {
     switch (directions[i]) {
       case 'S':
@@ -97,8 +112,10 @@ void loop() {
     }
   }
 
-  Serial.println("Arrived at destination");
-  delay(30000); //Wait 30 seconds
+  if (numMoves != 0) { //If we actually did something and aren't just waiting for instructions
+    Serial.println("Arrived at destination");
+    delay(30000); //Wait 30 seconds
+  }
 }
 
 //Counts the number of moves contained in the data
@@ -109,17 +126,24 @@ int count_moves(String theData) {
   int s = 0;
   int moves;
 
-  for (i = 0; i < len; i++)
-  {
-    if (theData.charAt(i) == ',')
-    {
-      count++;
-    }
+  if (len == 0) {
+    return 0;
   }
+  
+  else {
 
-  moves = (count - 1) / 2;
-  return moves;
+    for (i = 0; i < len; i++)
+    {
+      if (theData.charAt(i) == ',')
+      {
+        count++;
+      }
+    }
 
+    moves = (count - 1) / 2;
+    return moves;
+    
+  }
 }
 
 void populateMovementData() {
@@ -205,6 +229,50 @@ void turnRight() {
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
   digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
   digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+}
+
+void getInfoFromApp() {
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("new client");
+    // an http request ends with a blank line
+    boolean currentLineIsBlank = true;
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        thePOST += String(c); //Add the information to the list of instructions
+        Serial.write(c);
+        // if you've gotten to the end of the line (received a newline
+        // character) and the line is blank, the http request has ended,
+        // so you can send a reply
+        if (c == '\n' && currentLineIsBlank) {
+          // send a standard http response header
+          Serial.println("Sending a response");
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: text/html");
+          client.println("Connection: close");  // the connection will be closed after completion of the response
+          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+          client.println("<!DOCTYPE HTML>");
+          client.println("<html>");
+          client.print("hello team C");
+          client.println("</html>");
+          break;
+        }
+        if (c == '\n') {
+          // you're starting a new line
+          currentLineIsBlank = true;
+        } else if (c != '\r') {
+          // you've gotten a character on the current line
+          currentLineIsBlank = false;
+        }
+      }
+    }
+    // give the web browser time to receive the data
+    delay(1);
+    // close the connection:
+    client.stop();
+    Serial.println("client disonnected");
+  }
 }
 
 //Network Info Stuff
