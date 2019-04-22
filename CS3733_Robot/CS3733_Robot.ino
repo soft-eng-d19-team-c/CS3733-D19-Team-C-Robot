@@ -23,6 +23,7 @@ int distances[max_moves];
 char directions[max_moves];
 int numMoves;
 
+
 WiFiServer server(80);
 
 void setup() {
@@ -54,7 +55,7 @@ void setup() {
     status = WiFi.begin(ssid, pass);
 
     // wait 5 seconds for connection:
-    delay(5000);
+    delay(10000);
   }
 
   // you're connected now, so print out the data:
@@ -97,6 +98,8 @@ void loop() {
 
   //Parse directions and distances
   for (int i = 0; i <= numMoves; i++) {
+    digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+    digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
     switch (directions[i]) {
       case 'S':
         driveStraight(distances[i]);
@@ -129,7 +132,7 @@ int count_moves(String theData) {
   if (len == 0) {
     return 0;
   }
-  
+
   else {
 
     for (i = 0; i < len; i++)
@@ -142,7 +145,7 @@ int count_moves(String theData) {
 
     moves = (count - 1) / 2;
     return moves;
-    
+
   }
 }
 
@@ -173,13 +176,14 @@ void populateMovementData() {
 }
 
 void driveStraight(int inches) {
-
+  delay(10);
   Serial.println("Going straight");
+  delay(10);
   double driveTime = (inches / 6) * 1000;
   digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
   digitalWrite(dirMotorB, HIGH);  //Establishes forward direction of Channel B
-  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
-  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  //digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
@@ -188,18 +192,20 @@ void driveStraight(int inches) {
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
-  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
-  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
-
+  //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+  delay(100);
 }
 
 void turnLeft() {
+  delay(10);
   Serial.println("Turning Left");
+  delay(10);
   //Should always be 90 deg
   digitalWrite(dirMotorA, LOW); //Establishes backwards direction of Channel A
   digitalWrite(dirMotorB, HIGH);  //Establishes forwards direction of Channel B
-  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
-  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  //digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
@@ -208,17 +214,20 @@ void turnLeft() {
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
-  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
-  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+  //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+  delay(100);
 }
 
 void turnRight() {
+  delay(10);
   Serial.println("Turning Right");
+  delay(10);
   //Should always be 90 deg
   digitalWrite(dirMotorA, HIGH); //Establishes forwards direction of Channel A
   digitalWrite(dirMotorB, LOW);  //Establishes backwards direction of Channel B
-  digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
-  digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
+  //digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
+  //digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
@@ -227,8 +236,9 @@ void turnRight() {
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
-  digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
-  digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+  //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
+  //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
+  delay(100);
 }
 
 void getInfoFromApp() {
@@ -240,22 +250,39 @@ void getInfoFromApp() {
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
-        thePOST += String(c); //Add the information to the list of instructions
+        thePOST += c;
         Serial.write(c);
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
+
+          ///////////////////////////////////////
+          String requestBody;
+
+          while (client.available()) {
+            requestBody += (char)client.read();
+          }
+
+          if (requestBody.length()) {
+            Serial.println("Request body = ");
+            Serial.println(requestBody);
+            String realRequest = urldecode(requestBody);
+            Serial.println(realRequest);
+            Serial.println();
+          }
+          ///////////////////////////////////////
+
           // send a standard http response header
           Serial.println("Sending a response");
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
-          client.println("Connection: close");  // the connection will be closed after completion of the response
           client.println("Refresh: 5");  // refresh the page automatically every 5 sec
-          client.println("<!DOCTYPE HTML>");
+          //client.println("<!DOCTYPE HTML>");
           client.println("<html>");
-          client.print("hello team C");
+          client.print("Hello team C. Thank you for the instructions.");
           client.println("</html>");
+          client.println("Connection: close");  // the connection will be closed after completion of the response
           break;
         }
         if (c == '\n') {
@@ -334,4 +361,47 @@ void printMacAddress(byte mac[]) {
     }
   }
   Serial.println();
+}
+
+String urldecode(String str)
+{
+    
+    String encodedString="";
+    char c;
+    char code0;
+    char code1;
+    for (int i =0; i < str.length(); i++){
+        c=str.charAt(i);
+      if (c == '+'){
+        encodedString+=' ';  
+      }else if (c == '%') {
+        i++;
+        code0=str.charAt(i);
+        i++;
+        code1=str.charAt(i);
+        c = (h2int(code0) << 4) | h2int(code1);
+        encodedString+=c;
+      } else{
+        
+        encodedString+=c;  
+      }
+      
+      yield();
+    }
+    
+   return encodedString;
+}
+
+unsigned char h2int(char c)
+{
+    if (c >= '0' && c <='9'){
+        return((unsigned char)c - '0');
+    }
+    if (c >= 'a' && c <='f'){
+        return((unsigned char)c - 'a' + 10);
+    }
+    if (c >= 'A' && c <='F'){
+        return((unsigned char)c - 'A' + 10);
+    }
+    return(0);
 }
