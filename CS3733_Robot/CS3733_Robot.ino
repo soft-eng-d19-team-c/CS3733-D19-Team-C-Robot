@@ -10,8 +10,12 @@ const int velMotorA = 3; //Motor pin for channel A, 255 = full speed
 const int velMotorB = 11; //Motor pin for channel B, 255 = full speed
 const int brakeA = 9; //Brake pin for channel A, HIGH = engaged
 const int brakeB = 8; //Brake pin for channel B, HIGH = engaged
-const int turnTime = 2200;
-IPAddress ip(192, 168, 43, 192); //Static IP of the arduino
+const int turnTime = 4500;
+/*IPAddress ip(192, 168, 43, 192); //Static IP of the arduino
+  IPAddress gateway(192, 168, 50, 1);
+  IPAddress dns(8, 8, 8, 8);
+  IPAddress subnet(255, 255, 255, 0);*/
+
 
 
 char ssid[] = SECRET_SSID;        // Network SSID (name)
@@ -22,6 +26,8 @@ int len;
 int distances[max_moves];
 char directions[max_moves];
 int numMoves;
+String realRequest;
+String data;
 
 
 WiFiServer server(80);
@@ -46,15 +52,14 @@ void setup() {
     Serial.println("Please upgrade the firmware");
   }
 
-  WiFi.config(ip); //Force WiFi.begin to use the static IP
-
   // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to open SSID: ");
+    Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
+    //WiFi.config(ip, dns, gateway, subnet); //Force WiFi.begin to use the static IP
     status = WiFi.begin(ssid, pass);
-
-    // wait 5 seconds for connection:
+    //WiFi.config(ip, dns, gateway, subnet); //Force WiFi.begin to use the static IP
+    // wait 10 seconds for connection:
     delay(10000);
   }
 
@@ -63,6 +68,7 @@ void setup() {
   server.begin();
   printCurrentNet();
   printWifiData();
+
 
   // ********* End Network Setup ********* //
 
@@ -86,14 +92,16 @@ void setup() {
 
 void loop() {
 
-  thePOST = ""; //Reset to empty string. Comment this out to use a fake test string
+  data = ""; //Reset to empty string. Comment this out to use a fake test string
 
   getInfoFromApp();
-  Serial.println("The instructions recieved are:");
-  Serial.println(thePOST);
 
-  len = thePOST.length();
-  numMoves = count_moves(thePOST);
+  if (data == "") {
+    Serial.println("Awaiting instructions from application");
+  }
+
+  len = data.length();
+  numMoves = count_moves(data);
   populateMovementData(); //Parse data into arrays of directon/distance
 
   //Parse directions and distances
@@ -102,6 +110,7 @@ void loop() {
     digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
     switch (directions[i]) {
       case 'S':
+        //turnLeft();
         driveStraight(distances[i]);
         break;
       case 'L':
@@ -109,6 +118,7 @@ void loop() {
         driveStraight(distances[i]);
         break;
       case 'R':
+        //turnLeft();
         turnRight();
         driveStraight(distances[i]);
         break;
@@ -154,7 +164,7 @@ void populateMovementData() {
 
   int distCount = 0;
   int dirCount = 1;
-  char *str_array = thePOST.c_str();
+  char *str_array = data.c_str();
   char* token = strtok(str_array, ",");
   directions[0] = token[0];
   char* token2;
@@ -176,25 +186,38 @@ void populateMovementData() {
 }
 
 void driveStraight(int inches) {
-  delay(10);
+  delay(1);
   Serial.println("Going straight");
-  delay(10);
-  double driveTime = (inches / 6) * 1000;
+  delay(1);
+  double ips = (double)inches / 6;
+  Serial.println("ips:");
+  Serial.println(ips);
+  double driveTime = ips * 1000.0;
+  Serial.println("Drive time:");
+  Serial.println(/*(int)*/ driveTime);
   digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
+  Serial.println("Motor A HIGH");
   digitalWrite(dirMotorB, HIGH);  //Establishes forward direction of Channel B
+  Serial.println("Motor B HIGH");
   //digitalWrite(brakeA, LOW);   //Disengage the Brake for Channel A
   //digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
   analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
-
+  Serial.println("Go motors");
+  Serial.println("Delaying for:");
+  Serial.println(driveTime);
   delay(driveTime); //In the absence of knowing how far
+  Serial.println("Delay over");
+
 
   analogWrite(velMotorA, 0);   //Stops powering the motor on Channel A
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
+  Serial.println("Stopped motors");
   //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
   //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
-  delay(100);
+  delay(1);
+  Serial.println("Done going straight");
 }
 
 void turnLeft() {
@@ -216,7 +239,8 @@ void turnLeft() {
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
   //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
   //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
-  delay(100);
+  Serial.println("Done turning Left");
+  delay(500);
 }
 
 void turnRight() {
@@ -238,7 +262,8 @@ void turnRight() {
   analogWrite(velMotorB, 0);   //Stops powering the motor on Channel B
   //digitalWrite(brakeA, HIGH);   //Engage the Brake for Channel A
   //digitalWrite(brakeB, HIGH);   //Engage the Brake for Channel B
-  delay(100);
+  Serial.println("Done turning Right");
+  delay(1);
 }
 
 void getInfoFromApp() {
@@ -267,7 +292,7 @@ void getInfoFromApp() {
           if (requestBody.length()) {
             Serial.println("Request body = ");
             Serial.println(requestBody);
-            String realRequest = urldecode(requestBody);
+            realRequest = urldecode(requestBody);
             Serial.println(realRequest);
             Serial.println();
           }
@@ -276,11 +301,11 @@ void getInfoFromApp() {
           // send a standard http response header
           Serial.println("Sending a response");
           client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
-          //client.println("<!DOCTYPE HTML>");
+          client.println("Content-type:text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML>");
           client.println("<html>");
-          client.print("Hello team C. Thank you for the instructions.");
+          client.println("<p>Hello team C. Thank you for the instructions.<P/><br/>");
           client.println("</html>");
           client.println("Connection: close");  // the connection will be closed after completion of the response
           break;
@@ -294,6 +319,10 @@ void getInfoFromApp() {
         }
       }
     }
+    //Get rid of key
+    data = realRequest.substring(5);
+    Serial.println("*********************DATA***********************************:");
+    Serial.println(data);
     // give the web browser time to receive the data
     delay(1);
     // close the connection:
@@ -365,43 +394,43 @@ void printMacAddress(byte mac[]) {
 
 String urldecode(String str)
 {
-    
-    String encodedString="";
-    char c;
-    char code0;
-    char code1;
-    for (int i =0; i < str.length(); i++){
-        c=str.charAt(i);
-      if (c == '+'){
-        encodedString+=' ';  
-      }else if (c == '%') {
-        i++;
-        code0=str.charAt(i);
-        i++;
-        code1=str.charAt(i);
-        c = (h2int(code0) << 4) | h2int(code1);
-        encodedString+=c;
-      } else{
-        
-        encodedString+=c;  
-      }
-      
-      yield();
+
+  String encodedString = "";
+  char c;
+  char code0;
+  char code1;
+  for (int i = 0; i < str.length(); i++) {
+    c = str.charAt(i);
+    if (c == '+') {
+      encodedString += ' ';
+    } else if (c == '%') {
+      i++;
+      code0 = str.charAt(i);
+      i++;
+      code1 = str.charAt(i);
+      c = (h2int(code0) << 4) | h2int(code1);
+      encodedString += c;
+    } else {
+
+      encodedString += c;
     }
-    
-   return encodedString;
+
+    yield();
+  }
+
+  return encodedString;
 }
 
 unsigned char h2int(char c)
 {
-    if (c >= '0' && c <='9'){
-        return((unsigned char)c - '0');
-    }
-    if (c >= 'a' && c <='f'){
-        return((unsigned char)c - 'a' + 10);
-    }
-    if (c >= 'A' && c <='F'){
-        return((unsigned char)c - 'A' + 10);
-    }
-    return(0);
+  if (c >= '0' && c <= '9') {
+    return ((unsigned char)c - '0');
+  }
+  if (c >= 'a' && c <= 'f') {
+    return ((unsigned char)c - 'a' + 10);
+  }
+  if (c >= 'A' && c <= 'F') {
+    return ((unsigned char)c - 'A' + 10);
+  }
+  return (0);
 }
