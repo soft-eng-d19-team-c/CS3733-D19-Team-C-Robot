@@ -16,14 +16,14 @@ distance: int (In string form) containing distance to drive straight in inches
 
 If the following PathToText directions are generated:
 
-*Starting at Center for International Medicine
-*Take a right at Tower Hallway 5 distance: 9ft
-*Take a left at Tower Hallway 2 distance: 49ft
-*Take a right at Tower Hallway 1 distance: 30ft
-*Continue straight past Tower Elevator Entrance distance: 10ft
-*Take a right at Tower Hallway 10 distance: 14ft
-*Take a right at Tower Hallway 9 distance: 9ft
-*Finally, arrive at Multifaith Chapel
+* Starting at Center for International Medicine
+* Take a right at Tower Hallway 5 distance: 9ft
+* Take a left at Tower Hallway 2 distance: 49ft
+* Take a right at Tower Hallway 1 distance: 30ft
+* Continue straight past Tower Elevator Entrance distance: 10ft
+* Take a right at Tower Hallway 10 distance: 14ft
+* Take a right at Tower Hallway 9 distance: 9ft
+* Finally, arrive at Multifaith Chapel
 
 
 The data sent to the robot should look like:
