@@ -1,6 +1,10 @@
 # CS3733-D19-Team-C-Robot
 Code for the robot
 
+## Dependencies
+
+In the Arduino IDE you will need to install [WiFiNINA](https://github.com/arduino-libraries/WiFiNINA) from the library manager and [Arduino megaAVR Boards](https://github.com/arduino/ArduinoCore-megaavr) from the board manager for use with the Uno Wifi Rev2 
+
 ## POST data format
 Comma-seperated String: "turn, distance, turn, distance..."
 
@@ -10,25 +14,22 @@ distance: int (In string form) containing distance to drive straight in inches
 
 ### Example
 
-Starting at Hallway 7 Floor L1
-Take a left at Hallway 8 Floor L1
-Continue straight past Elevator K Floor L1
-Take a left at Hallway 9 Floor L1
-Continue straight past Vending Machine 1 L1
-Take a right at Hallway 12 Floor L1
-Take a left at Hallway 13 Floor L1
-Continue straight past Day Surgery Family Waiting Floor L1
-Take a left at Day Surgery Family Waiting Exit Floor L1
-Finally, arrive at Hallway 14 Floor L1
+If the following PathToText directions are generated:
 
-With made up distance numbers should look like:
+* Starting at Center for International Medicine
+* Take a right at Tower Hallway 5 distance: 9ft
+* Take a left at Tower Hallway 2 distance: 49ft
+* Take a right at Tower Hallway 1 distance: 30ft
+* Continue straight past Tower Elevator Entrance distance: 10ft
+* Take a right at Tower Hallway 10 distance: 14ft
+* Take a right at Tower Hallway 9 distance: 9ft
+* Finally, arrive at Multifaith Chapel
+
+
+The data sent to the robot should look like:
 
 ```
-"S,2000,L,50,S,15,L,150,S,2460,R,350,L,910,S,717,L,450";
+"R,108,L,588,R,360,S,120,R,168,R,108";
 ```
 
-The maximum number of moves that can be sent and run at once is currently 100.
-
-## Dependencies
-
-In the Arduino IDE you will need to install WiFiNINA from the library manager and Arduino megaAVR boards from the board manager for use with Uno Wifi Rev2 
+The maximum number of moves that can be sent and run at once is currently 100. This can be changed by setting ```max_moves``` on line 6 to the desired value.
