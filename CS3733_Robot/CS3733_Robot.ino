@@ -10,7 +10,7 @@ const int velMotorA = 3; //Motor pin for channel A, 255 = full speed
 const int velMotorB = 11; //Motor pin for channel B, 255 = full speed
 const int brakeA = 9; //Brake pin for channel A, HIGH = engaged
 const int brakeB = 8; //Brake pin for channel B, HIGH = engaged
-const int turnTime = 4500;
+const int turnTime = 2600;
 /*IPAddress ip(192, 168, 43, 192); //Static IP of the arduino
   IPAddress gateway(192, 168, 50, 1);
   IPAddress dns(8, 8, 8, 8);
@@ -110,17 +110,24 @@ void loop() {
     digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
     switch (directions[i]) {
       case 'S':
-        //turnLeft();
-        driveStraight(distances[i]);
+        //turnRight();
+        //Serial.println((distances[i] * 2));
+        Serial.println("Going for in:");
+        Serial.println(distances[i]);
+        driveStraight((distances[i] / 2));
         break;
       case 'L':
         turnLeft();
-        driveStraight(distances[i]);
+        Serial.println("Going for in:");
+        Serial.println(distances[i]);
+        driveStraight((distances[i] / 2));
         break;
       case 'R':
         //turnLeft();
         turnRight();
-        driveStraight(distances[i]);
+        Serial.println("Going for in:");
+        Serial.println(distances[i]);
+        driveStraight((distances[i] / 2));
         break;
     }
   }
@@ -189,10 +196,10 @@ void driveStraight(int inches) {
   delay(1);
   Serial.println("Going straight");
   delay(1);
-  double ips = (double)inches / 6;
+  int ips = inches / 11;
   Serial.println("ips:");
   Serial.println(ips);
-  double driveTime = ips * 1000.0;
+  int driveTime = ips * 1000;
   Serial.println("Drive time:");
   Serial.println(/*(int)*/ driveTime);
   digitalWrite(dirMotorA, HIGH); //Establishes forward direction of Channel A
@@ -203,7 +210,7 @@ void driveStraight(int inches) {
   //digitalWrite(brakeB, LOW);   //Disengage the Brake for Channel B
   //This is where a while loop or some sort of control goes
   analogWrite(velMotorA, 255);   //Spins the motor on Channel A at full speed
-  analogWrite(velMotorB, 255);   //Spins the motor on Channel B at full speed
+  analogWrite(velMotorB, 254);   //Spins the motor on Channel B at full speed
   Serial.println("Go motors");
   Serial.println("Delaying for:");
   Serial.println(driveTime);
