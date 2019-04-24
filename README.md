@@ -5,7 +5,14 @@ Code for the robot
 
 In the Arduino IDE you will need to install [WiFiNINA](https://github.com/arduino-libraries/WiFiNINA) from the library manager and [Arduino megaAVR Boards](https://github.com/arduino/ArduinoCore-megaavr) from the board manager for use with the Uno Wifi Rev2 
 
+## Hardware
+
+* [Arduino Uno WiFi Rev 2](https://store.arduino.cc/usa/arduino-uno-wifi-rev2)
+* [Arduino Motor Shield](https://store.arduino.cc/usa/arduino-motor-shield-rev3)
+* [Dagu Rover 5 Tracked Chassis](https://www.pololu.com/product/1550)
+
 ## POST data format
+
 Comma-seperated String: "turn, distance, turn, distance..."
 
 turn: String containing either L, R, or S
